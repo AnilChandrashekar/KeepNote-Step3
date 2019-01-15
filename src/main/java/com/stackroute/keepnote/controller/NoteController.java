@@ -1,5 +1,22 @@
 package com.stackroute.keepnote.controller;
 
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.stackroute.keepnote.model.Note;
+import com.stackroute.keepnote.model.Reminder;
 import com.stackroute.keepnote.service.NoteService;
 
 /*
@@ -10,7 +27,7 @@ import com.stackroute.keepnote.service.NoteService;
  * format. Starting from Spring 4 and above, we can use @RestController annotation which 
  * is equivalent to using @Controller and @ResposeBody annotation
  */
-
+@RestController
 public class NoteController {
 
 	/*
@@ -18,9 +35,10 @@ public class NoteController {
 	 * autowiring) Please note that we should not create any object using the new
 	 * keyword
 	 */
+	private NoteService noteService;
 
 	public NoteController(NoteService noteService) {
-
+		this.noteService = noteService;
 	}
 
 	/*
@@ -36,6 +54,25 @@ public class NoteController {
 	 * 
 	 * This handler method should map to the URL "/note" using HTTP POST method
 	 */
+	@PostMapping("/note")
+	public ResponseEntity<?> createNote(@RequestBody Note note,HttpServletRequest request) {
+		
+		HttpHeaders headers = new HttpHeaders();
+		String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+		if(loggedInUser== null)
+		{
+			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+		}
+		try {
+			note.setNoteCreatedAt(new Date());
+			note.setCreatedBy(loggedInUser);
+			noteService.createNote(note);
+			return new ResponseEntity<>(headers, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
+		}
+	}
 
 	/*
 	 * Define a handler method which will delete a note from a database.
@@ -49,6 +86,25 @@ public class NoteController {
 	 * This handler method should map to the URL "/note/{id}" using HTTP Delete
 	 * method" where "id" should be replaced by a valid noteId without {}
 	 */
+	
+	@DeleteMapping("/note/{noteId}")
+	public ResponseEntity<?> deleteNote(@PathVariable("noteId") int noteId, HttpServletRequest request) {
+
+		HttpHeaders headers = new HttpHeaders();
+		String loggedInUser = (String) request.getSession().getAttribute("loggedInUserId");
+		if (loggedInUser == null) {
+			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+		}
+		try {
+			if (noteService.deleteNote(noteId))
+			{
+				return new ResponseEntity<>(headers, HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+	}
 
 	/*
 	 * Define a handler method which will update a specific note by reading the
@@ -64,6 +120,27 @@ public class NoteController {
 	 * 
 	 * This handler method should map to the URL "/note/{id}" using HTTP PUT method.
 	 */
+	
+	@PutMapping("/note/{noteId}")
+	public ResponseEntity<?> updateNote(@RequestBody Note note, @PathVariable("noteId") int noteId,
+			HttpServletRequest request) {
+
+		HttpHeaders headers = new HttpHeaders();
+		String loggedInUser = (String) request.getSession().getAttribute("loggedInUserId");
+		if (loggedInUser == null) {
+			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+		}
+		try {
+			note.setNoteId(noteId);
+			note.setCreatedBy(loggedInUser);
+			note.setNoteCreatedAt(new Date());
+			noteService.updateNote(note, noteId);
+			return new ResponseEntity<>(headers, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+	}
 
 	/*
 	 * Define a handler method which will get us the notes by a userId.
@@ -76,5 +153,20 @@ public class NoteController {
 	 * 
 	 * This handler method should map to the URL "/note" using HTTP GET method
 	 */
-
+	@GetMapping("/note")
+	public ResponseEntity<?> getAllNotesByUserId(HttpServletRequest request) {
+		
+		HttpHeaders headers = new HttpHeaders();
+		String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+		if(loggedInUser== null)
+		{
+			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+		}
+		try {
+				noteService.getAllNotesByUserId(loggedInUser);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(headers, HttpStatus.OK);
+	}
 }

@@ -1,6 +1,16 @@
 package com.stackroute.keepnote.model;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /*
  * The class "User" will be acting as the data model for the User Table in the database. 
@@ -9,7 +19,8 @@ import java.util.Date;
  * If it finds any, then it will begin the process of looking through that particular 
  * Java object to recreate it as a table in your database.
  */
-
+@Entity
+@Table(name="User")
 public class User {
 
 	/*
@@ -24,43 +35,75 @@ public class User {
 	public User() {
 
 	}
-
+	public String getUserMobile() {
+		return userMobile;
+	}
+	public void setUserMobile(String userMobile) {
+		this.userMobile = userMobile;
+	}
 	public User(String string, String string1, String string2, String string3, Date date) {
 
+		this.userId =  string;
+		this.userName = string1;
+		this.userPassword = string2;
+		this.userMobile = string3;
+		this.userAddedDate = date;
 	}
-
+	
+	@Id
+	@Column(name="user_id",nullable=false)
+	private String userId;
+	
+	@JsonProperty("")
+	@Column(name="user_name")
+	private String userName;
+	
+	@JsonProperty("")
+	@Column(name="user_password")
+	private String userPassword;
+	
+	@JsonProperty("")
+	@Column(name="user_mobile")
+	private String userMobile;
+	
+	@JsonProperty("")
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="user_added_date",insertable=false)
+	private Date userAddedDate;
+	
 	public String getUserId() {
-		return null;
+		return userId;
 	}
 
-	public void setUserId(String string) {
-
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
-	public void setUserName(String string) {
+	public String getUserName() {
+		return userName;
+	}
 
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 	public String getUserPassword() {
-		return null;
-
+		return userPassword;
 	}
 
-	public void setUserPassword(String string) {
-
+	public void setUserPassword(String userPassword) {
+		this.userPassword = userPassword;
 	}
 
-	public String getUserMobile() {
-		return null;
+	
 
+	public Date getUserAddedDate() {
+		return userAddedDate;
 	}
 
-	public void setUserMobile(String string) {
-
+	public void setUserAddedDate(Date userAddedDate) {
+		this.userAddedDate = userAddedDate;
 	}
 
-	public void setUserAddedDate(Date date) {
-
-	}
-
+	
 }

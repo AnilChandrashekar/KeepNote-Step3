@@ -1,5 +1,20 @@
 package com.stackroute.keepnote.controller;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.stackroute.keepnote.exception.UserAlreadyExistException;
+import com.stackroute.keepnote.exception.UserNotFoundException;
+import com.stackroute.keepnote.model.User;
 import com.stackroute.keepnote.service.UserService;
 
 /*
@@ -10,7 +25,7 @@ import com.stackroute.keepnote.service.UserService;
  * format. Starting from Spring 4 and above, we can use @RestController annotation which 
  * is equivalent to using @Controller and @ResposeBody annotation
  */
-
+@RestController
 public class UserController {
 
 	/*
@@ -18,8 +33,10 @@ public class UserController {
 	 * autowiring) Please note that we should not create an object using the new
 	 * keyword
 	 */
+	private UserService userService;
 
 	public UserController(UserService userService) {
+		this.userService = userService;
 	}
 
 	/*
@@ -37,7 +54,30 @@ public class UserController {
 	 * This handler method should map to the URL "/user/register" using HTTP POST
 	 * method
 	 */
-
+		@PostMapping(value="/user/register")
+		public ResponseEntity<?> registerUser(@RequestBody User user) 
+				
+		{	HttpHeaders headers = new HttpHeaders();
+			System.out.println("user id : "+user.getUserId());
+			try {
+				userService.registerUser(user);
+			} catch (UserAlreadyExistException e) {
+				e.printStackTrace();
+				return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
+			}
+			return new ResponseEntity<>(headers, HttpStatus.CREATED);
+		}
+		
+		@GetMapping("/test")
+		public String test()
+		{
+			System.out.println("this is test get mapping");
+			return "Testing get service";
+		}
 	/*
 	 * Define a handler method which will update a specific user by reading the
 	 * Serialized object from request body and save the updated user details in a
@@ -50,6 +90,29 @@ public class UserController {
 	 * This handler method should map to the URL "/user/{id}" using HTTP PUT method.
 	 */
 
+
+		@PutMapping(value="/user/{userId}")
+		public ResponseEntity<?> updateUser(@RequestBody User user,@PathVariable("userId") String userId,
+															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		{
+			System.out.println("user id : "+userId);
+			try {
+				if(user!=null)
+				{
+					userService.updateUser(user, userId);
+					HttpHeaders headers = new HttpHeaders();
+				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+				    return new ResponseEntity<>(headers, HttpStatus.OK);
+				}
+			} catch (UserAlreadyExistException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+				HttpHeaders headers = new HttpHeaders();
+			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+		}
 	/*
 	 * Define a handler method which will delete a user from a database.
 	 * 
@@ -62,6 +125,24 @@ public class UserController {
 	 * This handler method should map to the URL "/user/{id}" using HTTP Delete
 	 * method" where "id" should be replaced by a valid userId without {}
 	 */
+		@DeleteMapping(value="/user/{userId}")
+		public ResponseEntity<?> deleteUser(@PathVariable("userId") String userId,
+															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		{
+			System.out.println("user id : "+userId);
+			try {
+					userService.deleteUser(userId);
+					HttpHeaders headers = new HttpHeaders();
+				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+				    return new ResponseEntity<>(headers, HttpStatus.OK);
+				
+			}  catch (Exception e) {
+				e.printStackTrace();
+			}
+				HttpHeaders headers = new HttpHeaders();
+			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+		}	
 
 	/*
 	 * Define a handler method which will show details of a specific user handle
@@ -73,5 +154,21 @@ public class UserController {
 	 * using HTTP GET method where "id" should be replaced by a valid userId without
 	 * {}
 	 */
-
+		@GetMapping(value="/user/{userId}")
+		public ResponseEntity<?> getUser(@PathVariable("userId") String userId,
+															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		{
+			System.out.println("user id : "+userId);
+			try {
+					userService.getUserById(userId);
+					HttpHeaders headers = new HttpHeaders();
+				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+				    return new ResponseEntity<>(headers, HttpStatus.OK);
+			}  catch (UserNotFoundException e) {
+				e.printStackTrace();
+				HttpHeaders headers = new HttpHeaders();
+			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+			}
+		}	
 }

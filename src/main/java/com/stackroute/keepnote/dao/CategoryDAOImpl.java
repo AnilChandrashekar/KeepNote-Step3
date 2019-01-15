@@ -1,9 +1,17 @@
 package com.stackroute.keepnote.dao;
 
 import java.util.List;
+
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.model.Category;
+import com.stackroute.keepnote.model.User;
 
 /*
  * This class is implementing the UserDAO interface. This class has to be annotated with 
@@ -14,30 +22,51 @@ import com.stackroute.keepnote.model.Category;
  * 					transaction. The database transaction happens inside the scope of a persistence 
  * 					context.  
  * */
+@Repository
+@Transactional
 public class CategoryDAOImpl implements CategoryDAO {
 
 	/*
 	 * Autowiring should be implemented for the SessionFactory.(Use
 	 * constructor-based autowiring.
 	 */
-	
-	public CategoryDAOImpl(SessionFactory sessionFactory) {
+	@Autowired
+	SessionFactory sessionFactory;
 
+	public CategoryDAOImpl(SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
+	
+	Session getSession()
+	{
+		return sessionFactory.getCurrentSession();
 	}
 
 	/*
 	 * Create a new category
 	 */
 	public boolean createCategory(Category category) {
-		return false;
-
+		
+		System.out.println("createCategory  START:");
+		boolean saveFlag = false;
+		getSession().save(category);
+		saveFlag = true;
+		System.out.println("save flag: " + saveFlag);
+		System.out.println("createCategory  END:");
+		return saveFlag;
 	}
 
 	/*
 	 * Remove an existing category
 	 */
 	public boolean deleteCategory(int categoryId) {
-		return false;
+		try {
+			getSession().createQuery("delete from Category where categoryId ="+categoryId).executeUpdate();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+			return false;
 
 	}
 	/*
@@ -45,6 +74,12 @@ public class CategoryDAOImpl implements CategoryDAO {
 	 */
 
 	public boolean updateCategory(Category category) {
+		try {
+			getSession().saveOrUpdate(category);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return false;
 
 	}
@@ -53,16 +88,26 @@ public class CategoryDAOImpl implements CategoryDAO {
 	 */
 
 	public Category getCategoryById(int categoryId) throws CategoryNotFoundException {
-		return null;
+		List<Category> categoryList = getSession().createCriteria(Category.class).add(Restrictions.idEq(categoryId)).list();
 
+		if (categoryList != null && !categoryList.isEmpty()) {
+			return (Category) categoryList.get(0);
+		}
+		else
+		{
+			throw new CategoryNotFoundException("Category not found.");
+		}
 	}
 
 	/*
 	 * Retrieve details of all categories by userId
 	 */
 	public List<Category> getAllCategoryByUserId(String userId) {
-		return null;
-
+		List<Category> categoryList = getSession().createCriteria(Category.class).
+								add(Restrictions.eq("categoryCreatedBy", userId)).list();
+		if (categoryList != null && !categoryList.isEmpty()) {
+			return categoryList;
+		}
+			return null;
 	}
-
 }

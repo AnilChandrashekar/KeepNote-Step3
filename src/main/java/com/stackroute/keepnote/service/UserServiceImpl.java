@@ -1,5 +1,8 @@
 package com.stackroute.keepnote.service;
 
+import org.springframework.stereotype.Service;
+
+import com.stackroute.keepnote.dao.UserDAO;
 import com.stackroute.keepnote.exception.UserAlreadyExistException;
 import com.stackroute.keepnote.exception.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
@@ -13,7 +16,7 @@ import com.stackroute.keepnote.model.User;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
-
+@Service
 public class UserServiceImpl implements UserService {
 
 	/*
@@ -21,14 +24,20 @@ public class UserServiceImpl implements UserService {
 	 * autowiring) Please note that we should not create any object using the new
 	 * keyword.
 	 */
+	
+	private UserDAO userDAO;
+	
+	public UserServiceImpl(UserDAO userDAO) {
+		this.userDAO = userDAO;
+	}
 
 	/*
 	 * This method should be used to save a new user.
 	 */
 
 	public boolean registerUser(User user) throws UserAlreadyExistException {
-		return false;
-
+		
+		return userDAO.registerUser(user);
 	}
 
 	/*
@@ -36,8 +45,11 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User updateUser(User user, String userId) throws Exception {
-		return user;
-
+		if(userDAO.updateUser(user))
+		{
+			return userDAO.getUserById(userId);
+		}
+			return null;
 	}
 
 	/*
@@ -45,8 +57,15 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User getUserById(String UserId) throws UserNotFoundException {
-		return null;
-
+		User user = userDAO.getUserById(UserId);
+		if(user!=null)
+		{
+			return user;
+		}
+		else
+		{
+			throw new UserNotFoundException("User not found");
+		}
 	}
 
 	/*
@@ -54,14 +73,13 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public boolean validateUser(String userId, String password) throws UserNotFoundException {
-		return false;
+		return userDAO.validateUser(userId, password);
 
 	}
 
 	/* This method should be used to delete an existing user. */
 	public boolean deleteUser(String UserId) {
-		return false;
-
+		return userDAO.deleteUser(UserId);
 	}
 
 }
