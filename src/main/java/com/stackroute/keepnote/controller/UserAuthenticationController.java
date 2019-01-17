@@ -78,16 +78,21 @@ public class UserAuthenticationController {
 	
 	@GetMapping("/logout")
 	public ResponseEntity<?>  logout(HttpServletRequest req) {
-	try {
+		HttpHeaders headers = new HttpHeaders();
+		try {
 			System.out.println("user id from session: "+req.getSession().getAttribute("loggedInUserId"));
 				req.getSession().invalidate();//removeAttribute("loggedInUserId");
-				HttpHeaders headers = new HttpHeaders();
-			    return new ResponseEntity<>(headers, HttpStatus.OK);
+				if(req.getSession().getAttribute("loggedInUserId")!=null)
+				{
+					return new ResponseEntity<>(headers, HttpStatus.OK);
+				}else
+				{
+					return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
+				}
 			
-		} catch (IllegalStateException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		HttpHeaders headers = new HttpHeaders();
 	    return new ResponseEntity<>(headers, HttpStatus.BAD_REQUEST);
 	}
 

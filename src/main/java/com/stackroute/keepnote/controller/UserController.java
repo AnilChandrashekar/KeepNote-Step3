@@ -1,5 +1,9 @@
 package com.stackroute.keepnote.controller;
 
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +64,7 @@ public class UserController {
 		{	HttpHeaders headers = new HttpHeaders();
 			System.out.println("user id : "+user.getUserId());
 			try {
+				user.setUserAddedDate(new Date());
 				userService.registerUser(user);
 			} catch (UserAlreadyExistException e) {
 				e.printStackTrace();
@@ -92,25 +97,27 @@ public class UserController {
 
 
 		@PutMapping(value="/user/{userId}")
-		public ResponseEntity<?> updateUser(@RequestBody User user,@PathVariable("userId") String userId,
-															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		public ResponseEntity<?> updateUser(@RequestBody User user,@PathVariable("userId") String userId,HttpServletRequest request) throws UserNotFoundException
 		{
 			System.out.println("user id : "+userId);
+			HttpHeaders headers = new HttpHeaders();
 			try {
-				if(user!=null)
+				String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+				if(loggedInUser== null)
 				{
-					userService.updateUser(user, userId);
-					HttpHeaders headers = new HttpHeaders();
-				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
+					return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+				}
+				if(userService.updateUser(user, userId)!=null)
+				{
 				    return new ResponseEntity<>(headers, HttpStatus.OK);
 				}
 			} catch (UserAlreadyExistException e) {
 				e.printStackTrace();
+				 return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 			} catch (Exception e) {
 				e.printStackTrace();
+				 return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 			}
-				HttpHeaders headers = new HttpHeaders();
-			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
 			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 		}
 	/*
@@ -126,21 +133,25 @@ public class UserController {
 	 * method" where "id" should be replaced by a valid userId without {}
 	 */
 		@DeleteMapping(value="/user/{userId}")
-		public ResponseEntity<?> deleteUser(@PathVariable("userId") String userId,
-															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		public ResponseEntity<?> deleteUser(@PathVariable("userId") String userId, HttpServletRequest request) throws UserNotFoundException
 		{
 			System.out.println("user id : "+userId);
+			HttpHeaders headers = new HttpHeaders();
 			try {
-					userService.deleteUser(userId);
-					HttpHeaders headers = new HttpHeaders();
-				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
-				    return new ResponseEntity<>(headers, HttpStatus.OK);
+					String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+					if(loggedInUser== null)
+					{
+						return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+					}
+					if(userService.deleteUser(userId))
+					{
+						return new ResponseEntity<>(headers, HttpStatus.OK);
+					}
 				
 			}  catch (Exception e) {
 				e.printStackTrace();
+				return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 			}
-				HttpHeaders headers = new HttpHeaders();
-			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
 			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 		}	
 
@@ -155,20 +166,25 @@ public class UserController {
 	 * {}
 	 */
 		@GetMapping(value="/user/{userId}")
-		public ResponseEntity<?> getUser(@PathVariable("userId") String userId,
-															UriComponentsBuilder ucBuilder) throws UserNotFoundException
+		public ResponseEntity<?> getUser(@PathVariable("userId") String userId,HttpServletRequest request) throws UserNotFoundException
 		{
 			System.out.println("user id : "+userId);
+			HttpHeaders headers = new HttpHeaders();
 			try {
-					userService.getUserById(userId);
-					HttpHeaders headers = new HttpHeaders();
-				    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
-				    return new ResponseEntity<>(headers, HttpStatus.OK);
+				String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+				if(loggedInUser== null)
+				{
+					return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+				}
+					if(userService.getUserById(userId)!=null)
+					{
+						return new ResponseEntity<>(headers, HttpStatus.OK);
+					}
+				    
 			}  catch (UserNotFoundException e) {
 				e.printStackTrace();
-				HttpHeaders headers = new HttpHeaders();
-			    headers.setLocation(ucBuilder.path("/user/{userId}").buildAndExpand(userId).toUri());
 			    return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 			}
+			return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 		}	
 }

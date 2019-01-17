@@ -56,7 +56,7 @@ public class NoteController {
 	 */
 	@PostMapping("/note")
 	public ResponseEntity<?> createNote(@RequestBody Note note,HttpServletRequest request) {
-		
+		System.out.println("inside createNote controller");
 		HttpHeaders headers = new HttpHeaders();
 		String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
 		if(loggedInUser== null)
@@ -64,14 +64,22 @@ public class NoteController {
 			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
 		}
 		try {
+			Reminder reminder = note.getReminder();
+			if(reminder!=null)
+			{
+				System.out.println("reminder id"+reminder.getReminderId());
+			}
 			note.setNoteCreatedAt(new Date());
 			note.setCreatedBy(loggedInUser);
-			noteService.createNote(note);
-			return new ResponseEntity<>(headers, HttpStatus.OK);
+			if(noteService.createNote(note))
+			{
+				return new ResponseEntity<>(headers, HttpStatus.CREATED);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 		}
+		return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 	}
 
 	/*
@@ -134,10 +142,13 @@ public class NoteController {
 			note.setNoteId(noteId);
 			note.setCreatedBy(loggedInUser);
 			note.setNoteCreatedAt(new Date());
-			noteService.updateNote(note, noteId);
-			return new ResponseEntity<>(headers, HttpStatus.OK);
+			if(noteService.updateNote(note, noteId)!=null)
+			{
+				return new ResponseEntity<>(headers, HttpStatus.OK);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
 	}

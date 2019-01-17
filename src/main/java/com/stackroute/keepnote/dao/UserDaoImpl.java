@@ -48,12 +48,14 @@ public class UserDaoImpl implements UserDAO {
 
 	public boolean registerUser(User user) {
 		System.out.println("registerUser  START:");
-		boolean saveFlag = false;
-		getSession().save(user);
-		saveFlag = true;
-		System.out.println("save flag: " + saveFlag);
-		System.out.println("registerUser  END:");
-		return saveFlag;
+		try {
+			getSession().save(user);
+			return true;
+		} catch (Exception e) {
+			//throw new UserAlreadyExistException("User already exists");
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	/*
@@ -74,9 +76,9 @@ public class UserDaoImpl implements UserDAO {
 	/*
 	 * Retrieve details of a specific user
 	 */
-	public User getUserById(String UserId) {
+	public User getUserById(String userId) {
 
-		List<User> userList = getSession().createCriteria(User.class).add(Restrictions.idEq(UserId)).list();
+		List<User> userList = getSession().createCriteria(User.class).add(Restrictions.eq("userId",userId)).list();
 
 		if (userList != null && !userList.isEmpty()) {
 			return (User) userList.get(0);
@@ -89,22 +91,20 @@ public class UserDaoImpl implements UserDAO {
 	 */
 
 	public boolean validateUser(String userId, String password) throws UserNotFoundException {
-		try {
-		List<User> userList = 	getSession().createQuery(" from User where userId ='"+userId+"' "
-					+ "	and userPassword='"+password+"'").list();
-			
-		if(userList!=null && userList.size()>0)
+		
+		/*List<User> userList = 	getSession().createQuery(" from User where userId ='"+userId+"' "
+					+ "	and userPassword='"+password+"'").list();*/
+		List<User> userList = getSession().
+		createCriteria(User.class).
+		add(Restrictions.eq("userId", userId)).
+		add(Restrictions.eq("userPassword", password)).list();
+		System.out.println("userList:  "+userList);
+		if(userList!=null && !userList.isEmpty())
 		{
 			return true;
 		}
-		else
-		{
+			System.out.println("User not available: ");
 			throw new UserNotFoundException("User not found");
-		}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-			return false;
 	}
 
 	/*
@@ -112,8 +112,11 @@ public class UserDaoImpl implements UserDAO {
 	 */
 	public boolean deleteUser(String userId) {
 		try {
-			getSession().createQuery("delete from User where userId ="+userId).executeUpdate();
-			return true;
+		int noRecordDeleted = getSession().createQuery("delete from User where userId ='"+userId+"'").executeUpdate();
+			if(noRecordDeleted>0)
+			{
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

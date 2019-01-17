@@ -49,10 +49,13 @@ public class CategoryServiceImpl implements CategoryService {
 	 */
 
 	public Category updateCategory(Category category, int id) throws CategoryNotFoundException {
-		if(categoryDAO.updateCategory(category))
+		if(categoryDAO.getCategoryById(id)!=null)
 		{
-			return categoryDAO.getCategoryById(id);
-		} return null;
+			category.setCategoryId(id);
+			if(categoryDAO.updateCategory(category))
+				return category;
+		}
+		 throw new CategoryNotFoundException("Category not found");
 
 	}
 
@@ -60,7 +63,13 @@ public class CategoryServiceImpl implements CategoryService {
 	 * This method should be used to get a category by categoryId.
 	 */
 	public Category getCategoryById(int categoryId) throws CategoryNotFoundException {
-		return categoryDAO.getCategoryById(categoryId);
+		Category category =  categoryDAO.getCategoryById(categoryId);
+		if(category==null)
+		{
+			throw new CategoryNotFoundException("Category not found");
+		}
+		System.out.println("Category object "+ category);
+		return category;
 
 	}
 

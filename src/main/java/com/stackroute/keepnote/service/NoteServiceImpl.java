@@ -46,6 +46,23 @@ public class NoteServiceImpl implements NoteService {
 
 	public boolean createNote(Note note) throws ReminderNotFoundException, CategoryNotFoundException {
 		
+		System.out.println("note category "+note.getCategory());
+		if(note.getCategory()!=null)
+		{
+			categoryDAO.getCategoryById(note.getCategory().getCategoryId());
+		}
+		/*else
+		{
+			note.setCategory(categoryDAO.getCategoryById(note.getCategory().getCategoryId()));
+		}*/
+		if(note.getReminder()!=null)
+		{
+			reminderDAO.getReminderById(note.getReminder().getReminderId());
+		}
+		/*else
+		{
+			note.setReminder(reminderDAO.getReminderById(note.getReminder().getReminderId()));
+		}*/
 		return noteDAO.createNote(note);
 
 	}
@@ -79,10 +96,17 @@ public class NoteServiceImpl implements NoteService {
 
 	public Note updateNote(Note note, int id)
 			throws ReminderNotFoundException, NoteNotFoundException, CategoryNotFoundException {
+		Note noteUpdated;
 		
 		if(noteDAO.UpdateNote(note))
 		{
-			return noteDAO.getNoteById(id);
+			noteUpdated = noteDAO.getNoteById(id);
+			if(noteUpdated!=null)
+			{
+				reminderDAO.getReminderById(id);
+				categoryDAO.getCategoryById(id);
+			}
+			return noteUpdated;
 		}
 		return null;
 	}

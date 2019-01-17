@@ -78,12 +78,15 @@ public class ReminderController {
 		try {
 			reminder.setReminderCreatedBy(loggedInUser);
 			reminder.setReminderCreationDate(new Date());
-			reminderService.createReminder(reminder);
-			return new ResponseEntity<>(headers, HttpStatus.OK);
+			if(reminderService.createReminder(reminder))
+			{
+				return new ResponseEntity<>(headers, HttpStatus.CREATED);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 		}
+		return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 	}
 
 	/*
@@ -147,8 +150,9 @@ public class ReminderController {
 			
 			reminder.setReminderId(reminderId);
 			reminder.setReminderCreatedBy(loggedInUser);
-				reminderService.updateReminder(reminder, reminderId);
+			if (reminderService.updateReminder(reminder, reminderId) != null) {
 				return new ResponseEntity<>(headers, HttpStatus.OK);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

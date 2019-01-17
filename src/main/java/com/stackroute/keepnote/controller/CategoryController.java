@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.stackroute.keepnote.exception.CategoryNotFoundException;
 import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.service.CategoryService;
 
@@ -67,12 +68,15 @@ public class CategoryController {
 		try {
 			category.setCategoryCreatedBy(loggedInUser);
 			category.setCategoryCreationDate(new Date());
-			categoryService.createCategory(category);
-			return new ResponseEntity<>(headers, HttpStatus.OK);
+			if(categoryService.createCategory(category))
+			{
+				return new ResponseEntity<>(headers, HttpStatus.CREATED);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 		}
+		return new ResponseEntity<>(headers, HttpStatus.CONFLICT);
 	}
 
 	/*
@@ -136,8 +140,14 @@ public class CategoryController {
 		try {	category.setCategoryId(categoryId);
 				category.setCategoryCreatedBy(loggedInUser);
 			//	category.setCategoryCreationDate(new Date());
-				categoryService.updateCategory(category, categoryId);
-				return new ResponseEntity<>(headers, HttpStatus.OK);
+				if(categoryService.updateCategory(category, categoryId)!=null)
+				{
+					return new ResponseEntity<>(headers, HttpStatus.OK);
+				}
+				else
+				{
+					return new ResponseEntity<>(headers, HttpStatus.NOT_FOUND);
+				}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -166,6 +176,24 @@ public class CategoryController {
 		try {
 				categoryService.getAllCategoryByUserId(loggedInUser);
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(headers, HttpStatus.OK);
+	}
+	
+	@GetMapping("/category/{categoryId}")
+	public ResponseEntity<?> getCategoryById(@PathVariable int categoryId, HttpServletRequest request) {
+		
+		HttpHeaders headers = new HttpHeaders();
+		String loggedInUser =(String) request.getSession().getAttribute("loggedInUserId");
+		if(loggedInUser== null)
+		{
+			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
+		}
+		try {
+				categoryService.getCategoryById(categoryId);
+		} catch (CategoryNotFoundException e) {
+			System.out.println("CategoryNotFoundException  "+e.getMessage());
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>(headers, HttpStatus.OK);

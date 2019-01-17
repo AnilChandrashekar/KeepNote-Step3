@@ -81,8 +81,11 @@ public class ReminderDAOImpl implements ReminderDAO {
 	public boolean deleteReminder(int reminderId) {
 		
 		try {
-			getSession().createQuery("delete from Reminder where reminderId ="+reminderId).executeUpdate();
-			return true;
+			int noRecordDeleted = getSession().createQuery("delete from Reminder where reminderId ="+reminderId).executeUpdate();
+			if(noRecordDeleted>0)
+			{
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,5 +1,6 @@
 package com.stackroute.keepnote.dao;
 
+import com.stackroute.keepnote.exception.UserAlreadyExistException;
 import com.stackroute.keepnote.exception.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
 

@@ -76,12 +76,12 @@ public class Note {
 	@Column(name = "note_created_by")
 	private String createdBy;
 	
-	@JsonIgnore
+	
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "category_id")
 	private Category category;
 	
-	@JsonIgnore
+	
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "reminder_id")
 	private Reminder reminder;

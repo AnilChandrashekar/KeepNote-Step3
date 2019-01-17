@@ -37,7 +37,11 @@ public class UserServiceImpl implements UserService {
 
 	public boolean registerUser(User user) throws UserAlreadyExistException {
 		
-		return userDAO.registerUser(user);
+		if(userDAO.getUserById(user.getUserId())==null)
+		{
+			return userDAO.registerUser(user);
+		}
+		throw new UserAlreadyExistException("User already exists");
 	}
 
 	/*
@@ -45,11 +49,20 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User updateUser(User user, String userId) throws Exception {
-		if(userDAO.updateUser(user))
+		boolean flag= userDAO.updateUser(user);
+		System.out.println("flag: "+flag);
+		if(flag)
 		{
-			return userDAO.getUserById(userId);
+			User userRet =  userDAO.getUserById(userId);
+			System.out.println("userRet object"+ userRet);
+			if(userRet==null)
+			{
+				throw new Exception();
+			}
+			return userRet;
 		}
-			return null;
+			System.out.println("before throwing Exception()");
+			throw new Exception();
 	}
 
 	/*
@@ -73,7 +86,21 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public boolean validateUser(String userId, String password) throws UserNotFoundException {
-		return userDAO.validateUser(userId, password);
+		
+		/*System.out.println("userId: "+userId);
+		System.out.println("password: "+password);
+		if(userDAO.getUserById(userId)!=null)
+		{
+			boolean flag = userDAO.validateUser(userId, password);
+			System.out.println("validate succes flag "+flag);
+			return flag;
+		}
+		throw new UserNotFoundException("User not found ");*/
+		if(userDAO.validateUser(userId, password))
+		{
+			return true;
+		}
+		throw new UserNotFoundException("User not found ");
 
 	}
 

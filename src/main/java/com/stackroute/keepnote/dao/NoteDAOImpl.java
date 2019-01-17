@@ -59,8 +59,11 @@ public class NoteDAOImpl implements NoteDAO {
 	public boolean deleteNote(int noteId) {
 
 		try {
-			getSession().createQuery("delete from Note where noteId ="+noteId).executeUpdate();
-			return true;
+		int noRecordDeleted = getSession().createQuery("delete from Note where noteId ="+noteId).executeUpdate();
+			if(noRecordDeleted>0)
+			{
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

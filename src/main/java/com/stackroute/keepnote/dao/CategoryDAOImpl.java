@@ -61,8 +61,11 @@ public class CategoryDAOImpl implements CategoryDAO {
 	 */
 	public boolean deleteCategory(int categoryId) {
 		try {
-			getSession().createQuery("delete from Category where categoryId ="+categoryId).executeUpdate();
-			return true;
+			int  noRecordDeleted = getSession().createQuery("delete from Category where categoryId ="+categoryId).executeUpdate();
+			if(noRecordDeleted>0)
+			{
+				return true;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,25 +81,26 @@ public class CategoryDAOImpl implements CategoryDAO {
 			getSession().saveOrUpdate(category);
 			return true;
 		} catch (Exception e) {
+			System.out.println("Exception "+e.getMessage());
 			e.printStackTrace();
 		}
 		return false;
-
 	}
 	/*
 	 * Retrieve details of a specific category
 	 */
 
 	public Category getCategoryById(int categoryId) throws CategoryNotFoundException {
-		List<Category> categoryList = getSession().createCriteria(Category.class).add(Restrictions.idEq(categoryId)).list();
+		
+		List<Category> categoryList = getSession().createCriteria(Category.class).
+					add(Restrictions.eq("categoryId",categoryId)).list();
 
 		if (categoryList != null && !categoryList.isEmpty()) {
+			System.out.println("categoryList size::: "+categoryList.size());
 			return (Category) categoryList.get(0);
 		}
-		else
-		{
+			System.out.println("categoryList ::: "+categoryList);
 			throw new CategoryNotFoundException("Category not found.");
-		}
 	}
 
 	/*

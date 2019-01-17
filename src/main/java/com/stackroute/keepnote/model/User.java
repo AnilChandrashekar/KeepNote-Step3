@@ -1,17 +1,11 @@
 package com.stackroute.keepnote.model;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
+import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /*
  * The class "User" will be acting as the data model for the User Table in the database. 
  * Please note that this class is annotated with @Entity annotation. 
@@ -54,21 +48,16 @@ public class User {
 	@Column(name="user_id",nullable=false)
 	private String userId;
 	
-	@JsonProperty("")
 	@Column(name="user_name")
 	private String userName;
 	
-	@JsonProperty("")
 	@Column(name="user_password")
 	private String userPassword;
 	
-	@JsonProperty("")
 	@Column(name="user_mobile")
 	private String userMobile;
 	
-	@JsonProperty("")
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="user_added_date",insertable=false)
+	@Column(name="user_added_date")
 	private Date userAddedDate;
 	
 	public String getUserId() {
