@@ -81,7 +81,6 @@ public class UserAuthenticationController {
 		HttpHeaders headers = new HttpHeaders();
 		try {
 			System.out.println("user id from session: "+req.getSession().getAttribute("loggedInUserId"));
-				req.getSession().invalidate();//removeAttribute("loggedInUserId");
 				if(req.getSession().getAttribute("loggedInUserId")!=null)
 				{
 					return new ResponseEntity<>(headers, HttpStatus.OK);

@@ -1,6 +1,7 @@
 package com.stackroute.keepnote.controller;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stackroute.keepnote.exception.CategoryNotFoundException;
@@ -165,6 +167,7 @@ public class CategoryController {
 	 * This handler method should map to the URL "/category" using HTTP GET method
 	 */
 	@GetMapping("/category")
+	@ResponseBody
 	public ResponseEntity<?> getAllCategoryByUserId(HttpServletRequest request) {
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -174,7 +177,8 @@ public class CategoryController {
 			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
 		}
 		try {
-				categoryService.getAllCategoryByUserId(loggedInUser);
+				List<Category>  categoryList = categoryService.getAllCategoryByUserId(loggedInUser);
+				return new ResponseEntity<List<Category>>(categoryList, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

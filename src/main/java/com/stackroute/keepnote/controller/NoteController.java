@@ -1,6 +1,7 @@
 package com.stackroute.keepnote.controller;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.stackroute.keepnote.model.Category;
 import com.stackroute.keepnote.model.Note;
 import com.stackroute.keepnote.model.Reminder;
 import com.stackroute.keepnote.service.NoteService;
@@ -174,7 +176,8 @@ public class NoteController {
 			return new ResponseEntity<>(headers, HttpStatus.UNAUTHORIZED);
 		}
 		try {
-				noteService.getAllNotesByUserId(loggedInUser);
+				List<Note> notes = noteService.getAllNotesByUserId(loggedInUser);
+				return new ResponseEntity<List<Note>>(notes, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
